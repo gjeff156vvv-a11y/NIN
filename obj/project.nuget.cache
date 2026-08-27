@@ -1,9 +1,11 @@
 {
   "version": 2,
-  "dgSpecHash": "WkDIRSTq/Dw=",
+  "dgSpecHash": "1R7mHXyusdA=",
   "success": true,
   "projectFilePath": "/mnt/Game/Projects/C#/NIN/NIN.csproj",
   "expectedPackageFiles": [
+    "/home/gjeff/.nuget/packages/storage/1.0.1/storage.1.0.1.nupkg.sha512",
+    "/home/gjeff/.nuget/packages/tomlyn/2.10.1/tomlyn.2.10.1.nupkg.sha512",
     "/home/gjeff/.nuget/packages/microsoft.aspnetcore.app.ref/10.0.11/microsoft.aspnetcore.app.ref.10.0.11.nupkg.sha512"
   ],
   "logs": []

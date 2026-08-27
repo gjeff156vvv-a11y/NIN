@@ -1,11 +1,73 @@
 {
   "version": 3,
   "targets": {
-    "net10.0": {}
+    "net10.0": {
+      "Storage/1.0.1": {
+        "type": "package",
+        "compile": {
+          "lib/net10.0/Storage.dll": {}
+        },
+        "runtime": {
+          "lib/net10.0/Storage.dll": {}
+        }
+      },
+      "Tomlyn/2.10.1": {
+        "type": "package",
+        "compile": {
+          "lib/net10.0/Tomlyn.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Tomlyn.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/Tomlyn.targets": {}
+        }
+      }
+    }
   },
-  "libraries": {},
+  "libraries": {
+    "Storage/1.0.1": {
+      "sha512": "8fwvyOkfGq0icDpkXHco4EEIOsRK3EBVSfVTe6Iar9d64L7VSKqkFOPnh0azvO0Ilm34wu2I+dcuNqF/bbM10g==",
+      "type": "package",
+      "path": "storage/1.0.1",
+      "files": [
+        ".nupkg.metadata",
+        "lib/net10.0/Storage.dll",
+        "storage.1.0.1.nupkg.sha512",
+        "storage.nuspec"
+      ]
+    },
+    "Tomlyn/2.10.1": {
+      "sha512": "ykjOY3IpYmC4SpPcAZRTl/w2jTmhPMDydHq8xcV7tTBAQ22nKBsOkPqauIrZlMjHm03cmKfV23UOPscKp+J4Og==",
+      "type": "package",
+      "path": "tomlyn/2.10.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Tomlyn.png",
+        "analyzers/dotnet/cs/Tomlyn.SourceGeneration.dll",
+        "buildTransitive/Tomlyn.targets",
+        "lib/net10.0/Tomlyn.dll",
+        "lib/net10.0/Tomlyn.xml",
+        "lib/net8.0/Tomlyn.dll",
+        "lib/net8.0/Tomlyn.xml",
+        "lib/netstandard2.0/Tomlyn.dll",
+        "lib/netstandard2.0/Tomlyn.xml",
+        "readme.md",
+        "tomlyn.2.10.1.nupkg.sha512",
+        "tomlyn.nuspec"
+      ]
+    }
+  },
   "projectFileDependencyGroups": {
-    "net10.0": []
+    "net10.0": [
+      "Storage >= 1.0.1",
+      "Tomlyn >= 2.10.1"
+    ]
   },
   "packageFolders": {
     "/home/gjeff/.nuget/packages/": {}
@@ -50,6 +112,16 @@
     "frameworks": {
       "net10.0": {
         "targetAlias": "net10.0",
+        "dependencies": {
+          "Storage": {
+            "target": "Package",
+            "version": "[1.0.1, )"
+          },
+          "Tomlyn": {
+            "target": "Package",
+            "version": "[2.10.1, )"
+          }
+        },
         "imports": [
           "net461",
           "net462",

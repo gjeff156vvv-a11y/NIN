@@ -2,7 +2,7 @@
   "version": 3,
   "targets": {
     "net10.0": {
-      "Storage/1.0.1": {
+      "Storage/1.0.2": {
         "type": "package",
         "compile": {
           "lib/net10.0/Storage.dll": {}
@@ -84,14 +84,14 @@
     }
   },
   "libraries": {
-    "Storage/1.0.1": {
-      "sha512": "8fwvyOkfGq0icDpkXHco4EEIOsRK3EBVSfVTe6Iar9d64L7VSKqkFOPnh0azvO0Ilm34wu2I+dcuNqF/bbM10g==",
+    "Storage/1.0.2": {
+      "sha512": "cx0sfA5FEKxRabVXVGbVYo47kn24G6iNZXq3R6jV5zbN9KogIpYLPCX3OTnHQLhb453Qam12OMKdaYmXqKruIQ==",
       "type": "package",
-      "path": "storage/1.0.1",
+      "path": "storage/1.0.2",
       "files": [
         ".nupkg.metadata",
         "lib/net10.0/Storage.dll",
-        "storage.1.0.1.nupkg.sha512",
+        "storage.1.0.2.nupkg.sha512",
         "storage.nuspec"
       ]
     },
@@ -164,7 +164,7 @@
   },
   "projectFileDependencyGroups": {
     "net10.0": [
-      "Storage >= 1.0.1",
+      "Storage >= 1.0.2",
       "System.CommandLine >= 2.0.11",
       "Tomlyn >= 2.10.1"
     ]
@@ -215,7 +215,7 @@
         "dependencies": {
           "Storage": {
             "target": "Package",
-            "version": "[1.0.1, )"
+            "version": "[1.0.2, )"
           },
           "System.CommandLine": {
             "target": "Package",

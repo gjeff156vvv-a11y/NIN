@@ -49,6 +49,10 @@
               "target": "Package",
               "version": "[1.0.1, )"
             },
+            "System.CommandLine": {
+              "target": "Package",
+              "version": "[2.0.11, )"
+            },
             "Tomlyn": {
               "target": "Package",
               "version": "[2.10.1, )"

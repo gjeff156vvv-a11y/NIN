@@ -9,7 +9,7 @@ class Program
 
         var setCommand = new Command("set", "изменить настройки приложения");
 
-        var settingNameArgument = new Argument<string>("setting-name", "Имя настройки (dir, delay, fgcolor)");
+        var settingNameArgument = new Argument<string>("setting-name", "Имя настройки (BookPath, BookmarksPath)");
         var valueArgument = new Argument<string>("value", "Новое значение для настройки");
 
         // Добавляем аргументы внутрь команды set
@@ -25,9 +25,29 @@ class Program
             string settingName = parseResult.GetValue(settingNameArgument)!.ToLower();
             string value = parseResult.GetValue(valueArgument)!;
 
-            Console.WriteLine($"[Конфиг] Изменяем {settingName} на значение: {value}");
+            Config configToModify = ManagerConfig.Load();
+
+            switch(settingName)
+            {
+                case "dir": configToModify.PathBookDir = value; break;
+                case "json": configToModify.PathBookmarksJson = value; break;
+            }
+            ManagerConfig.Save(configToModify);
+
+            Console.WriteLine($"[Конфиг] Успешно перезаписан. {settingName} теперь равен: {value}");
         });
 
+        rootCommand.Action = new CliAction((ParseResult parseResult) => 
+        {
+            Config config = ManagerConfig.Load();
+
+            
+            string[] existingFiles = Directory.GetFiles(settings.PathBookDir, "*.pdf");
+            foreach (string filePath in existingFiles)
+            {
+                bookmarks.ProcessNewBook(filePath, settings.PathBookmarksJson);
+            }
+        })
         return await rootCommand.InvokeAsync(args);
 
     }

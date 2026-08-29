@@ -23,8 +23,7 @@ public class Bookmarks
 
         AddUniqueBooks(books,booksPath);
         string newEntry = JsonSerializer.Serialize(books, jsonOptions);
-//        File.WriteAllText(jsonPath,newEntry);
-        Console.WriteLine(newEntry);
+        File.WriteAllText(jsonPath,newEntry);
     }
 
     private string GetName(string bookPath)

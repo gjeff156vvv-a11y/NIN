@@ -1,6 +1,5 @@
 ﻿using System.Text.Encodings.Web;
 using System.Text.Json;
-using StorageLib;
 using PdfSharpCore.Pdf;
 using PdfSharpCore.Pdf.IO;
 
@@ -8,60 +7,24 @@ namespace NIN;
 
 public class Bookmarks
 {
-    private Storage storage = new();
-
     private readonly JsonSerializerOptions jsonOptions = new()
     {
         WriteIndented = true,
-        // Автоматически делает "Cmd" -> "cmd", "Label" -> "label" и т.д.
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        // Чтобы кириллица в названии книг не превращалась в коды типа \u041f
         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
     };
 
-    public void ProcessNewBook(string bookPath, string jsonPath)
+    public void ProcessNewBook(string[] booksPath, string jsonPath)
     {
-        Thread.Sleep(300); // Даем системе время дописать файл
-
         if (!File.Exists(jsonPath)) return;
 
-        string cmdCommand = $"zathura {bookPath}";
-        string jsonText = storage.ReadAll(jsonPath).Trim();
-        
-        // Быстрая проверка на дубликат по команде
-        if (jsonText.Contains($"\"cmd\": \"{cmdCommand}\"")) return;
+        string jsonText = File.ReadAllText(jsonPath);
+        List<Book> books = JsonSerializer.Deserialize<List<Book>>(jsonText,jsonOptions);
 
-         string label = GetName(bookPath);
-
-                // Создаем объект твоей модели
-        Book newBook = new()
-        {
-            Cmd = cmdCommand,
-            Label = label,
-            Glyph = "bookmark",
-            Description = string.Empty,
-            RunInBackground = true,
-            RunInTerminal = false
-        };
-// Сериализуем объект в чистую JSON-строку
-        string newEntry = JsonSerializer.Serialize(newBook, jsonOptions);
-
-        int lastBracketIndex = jsonText.LastIndexOf(']');
-        if (lastBracketIndex != -1)
-        {
-            string prefix = ",\n";
-            
-            // Если JSON-массив был пустым `[]`, убираем запятую перед элементом
-            if (jsonText.Substring(0, lastBracketIndex).Trim().EndsWith("["))
-            {
-                prefix = "\n";
-            }
-
-            // Вклеиваем сериализованный объект перед закрывающей скобкой
-            string updatedJson = jsonText.Substring(0, lastBracketIndex).TrimEnd() + prefix + newEntry + "\n]";
-            storage.SaveAll(updatedJson, jsonPath);
-        }
-
+        AddUniqueBooks(books,booksPath);
+        string newEntry = JsonSerializer.Serialize(books, jsonOptions);
+//        File.WriteAllText(jsonPath,newEntry);
+        Console.WriteLine(newEntry);
     }
 
     private string GetName(string bookPath)
@@ -82,5 +45,32 @@ public class Bookmarks
         {
         }
         return Path.GetFileNameWithoutExtension(bookPath) ?? Path.GetFileName(bookPath);
+    }
+
+    private void AddUniqueBooks(List<Book> books, string[] bookPath)
+    {
+        foreach (var paths in bookPath)
+        {
+            string cmdCommand = $"zathura {paths}";
+
+            var Dublicate = from b in books
+                        where b.Cmd == cmdCommand
+                        select b;
+
+            if(!Dublicate.Any())
+            {
+                string label = GetName(paths);
+                Book newBook = new()
+                {
+                    Cmd = cmdCommand,
+                    Label = label,
+                    Glyph = "bookmark",
+                    Description = string.Empty,
+                    RunInBackground = true,
+                    RunInTerminal = false
+                };
+                books.Add(newBook);
+            }
+        }
     }
 }

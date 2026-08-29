@@ -1,5 +1,4 @@
-﻿
-namespace NIN;
+﻿namespace NIN;
 
 public class Book
 {
@@ -11,4 +10,3 @@ public class Book
     public bool RunInTerminal { get; set; }
     public string Type { get; set; } = "bookmark";
 }
-

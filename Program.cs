@@ -1,54 +1,59 @@
 ﻿using System.CommandLine;
+
 namespace NIN;
 
 class Program
 {
-    static void Main(string[] args)
+    static async Task<int> Main(string[] args)
     {
         var rootCommand = new RootCommand("CLI утилита для занесение книг в библиотеку");
 
         var setCommand = new Command("set", "изменить настройки приложения");
 
-        var settingNameArgument = new Argument<string>("setting-name", "Имя настройки (BookPath, BookmarksPath)");
-        var valueArgument = new Argument<string>("value", "Новое значение для настройки");
+        var settingNameArgument = new Argument<string>("setting-name");
+        var valueArgument = new Argument<string>("value");
 
         // Добавляем аргументы внутрь команды set
-        setCommand.AddArgument(settingNameArgument);
-        setCommand.AddArgument(valueArgument);
+        setCommand.Arguments.Add(settingNameArgument);
+        setCommand.Arguments.Add(valueArgument);
 
         // 5. Добавляем подкоманду set в корневую команду
-        rootCommand.Add(setCommand);
+        rootCommand.Subcommands.Add(setCommand);
 
-        setCommand.Action = new CliAction((ParseResult parseResult) =>
+        setCommand.SetAction(parseResult => 
         {
-            // Извлекаем значения аргументов по их объектам
-            string settingName = parseResult.GetValue(settingNameArgument)!.ToLower();
+            string name = parseResult.GetValue(settingNameArgument)!;
             string value = parseResult.GetValue(valueArgument)!;
-
-            Config configToModify = ManagerConfig.Load();
-
-            switch(settingName)
-            {
-                case "dir": configToModify.PathBookDir = value; break;
-                case "json": configToModify.PathBookmarksJson = value; break;
-            }
-            ManagerConfig.Save(configToModify);
-
-            Console.WriteLine($"[Конфиг] Успешно перезаписан. {settingName} теперь равен: {value}");
+            Set(name, value);
         });
 
-        rootCommand.Action = new CliAction((ParseResult parseResult) => 
+        rootCommand.SetAction((parseResult) => 
         {
-            Config config = ManagerConfig.Load();
+            Root(parseResult);
+        });
 
-            
-            string[] existingFiles = Directory.GetFiles(settings.PathBookDir, "*.pdf");
-            foreach (string filePath in existingFiles)
-            {
-                bookmarks.ProcessNewBook(filePath, settings.PathBookmarksJson);
-            }
-        })
-        return await rootCommand.InvokeAsync(args);
+return rootCommand.Parse(args).Invoke();
+ }
 
+
+    private static void Set(string settingName,string value)
+    {
+        Config configToModify = ManagerConfig.Load();
+        switch(settingName)
+        {
+            case "dir": configToModify.PathBookDir = value; break;
+            case "json": configToModify.PathBookmarksJson = value; break;
+        }
+        ManagerConfig.Save(configToModify);
+        Console.WriteLine($"[Конфиг] Успешно перезаписан. {settingName} теперь равен: {value}");
+    }
+
+    private static void Root(ParseResult parseResult)
+    {
+        Config config = ManagerConfig.Load();
+        Bookmarks bookmarks = new();
+
+        string[] existingFiles = Directory.GetFiles(config.PathBookDir, "*.pdf");
+        bookmarks.ProcessNewBook(existingFiles, config.PathBookmarksJson);
     }
 }

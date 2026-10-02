@@ -21,7 +21,6 @@ public static class ManagerConfig
         if (content == null)
         {
             var defaultConfig = new Config();
-            Save(defaultConfig);
             return defaultConfig;
         }
         return TomlSerializer.Deserialize(content, ConfigTypeInfo) ?? new Config();
@@ -29,7 +28,6 @@ public static class ManagerConfig
 
     public static void Save(Config config)
     {
-        string tomlString = TomlSerializer.Serialize(config, ConfigTypeInfo);
         Storage.SaveAll(tomlString,fileName);
     }
 }

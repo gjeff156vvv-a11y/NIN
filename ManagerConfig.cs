@@ -1,33 +1,25 @@
 ﻿using StorageLib;
-using Tomlyn.Serialization;
-using Tomlyn;
+using ConfParser;
  
 namespace NIN;
 
-[TomlSerializable(typeof(Config))]
-internal partial class ConfigTomlContext : TomlSerializerContext
-{
-}
-
 public static class ManagerConfig
 {
-    private static string fileName = "settings.toml";
+    private static FileStorage setting = new FileStorage("settings.config");
 
-    private static readonly TomlTypeInfo<Config> ConfigTypeInfo = ConfigTomlContext.Default.Config;
-
-    public static Config Load()
+    public static void Load()
     {
-        string content = Storage.ReadAll(fileName);
-        if (content == null)
-        {
-            var defaultConfig = new Config();
-            return defaultConfig;
-        }
-        return TomlSerializer.Deserialize(content, ConfigTypeInfo) ?? new Config();
+        Config config;
+        string content = setting.ReadAll();
+        if (content == null) config  = new Config();
+        else config = new Config(Parser.Deserialize(content));
+
+        Config.Initialize(config); 
     }
 
-    public static void Save(Config config)
+    public static void Save()
     {
-        Storage.SaveAll(tomlString,fileName);
+        string text = Parser.Serialize(Config.Instance.AppConfig);
+        setting.SaveAll(text);
     }
 }

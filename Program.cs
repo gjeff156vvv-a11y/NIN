@@ -38,22 +38,18 @@ return rootCommand.Parse(args).Invoke();
 
     private static void Set(string settingName,string value)
     {
-        Config configToModify = ManagerConfig.Load();
-        switch(settingName)
-        {
-            case "dir": configToModify.PathBookDir = value; break;
-            case "json": configToModify.PathBookmarksJson = value; break;
-        }
-        ManagerConfig.Save(configToModify);
-        Console.WriteLine($"[Конфиг] Успешно перезаписан. {settingName} теперь равен: {value}");
+        ManagerConfig.Load();
+        Config.Instance!.AppConfig[settingName] = value;
+        ManagerConfig.Save();
+        Console.WriteLine($"[Конфиг] Успешно перезаписан. {Config.Instance!.AppConfig[settingName]} теперь равен: {value}");
     }
 
     private static void Root(ParseResult parseResult)
     {
-        Config config = ManagerConfig.Load();
+        ManagerConfig.Load();
         Bookmarks bookmarks = new();
 
-        string[] existingFiles = Directory.GetFiles(config.PathBookDir, "*.pdf");
-        bookmarks.ProcessNewBook(existingFiles, config.PathBookmarksJson);
+        string[] existingFiles = Directory.GetFiles(Config.Instance!.AppConfig[Config.DirKey]);
+        bookmarks.ProcessNewBook(existingFiles, Config.Instance.AppConfig[Config.JsonKey]);
     }
 }

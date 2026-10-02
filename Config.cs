@@ -1,7 +1,22 @@
-﻿namespace NIN;
+﻿using Pars = System.Collections.Generic.Dictionary<string, string>;
+namespace NIN;
 
 public class Config
 {
-    public string PathBookDir {get;set;} = "/home/gjeff/Documents/books/";
-    public string PathBookmarksJson{get;set;} = "/home/gjeff/.local/state/noctalia/plugins/data/dunarand/bookmarks/data.json";
+    public Pars AppConfig{get;private set;}
+
+    public Config()
+    {
+        AppConfig = new Pars() 
+        {
+            { "PathBookDir" , "/home/gjeff/Documents/books/" },
+            { "PathBookmarksJson", "/home/gjeff/.local/state/noctalia/plugins/data/dunarand/bookmarks/data.json" },
+            { "prog", "zathura" }
+        };
+    }
+
+    public Config(Pars newConf)
+    {
+        AppConfig = newConf;
+    }
 }

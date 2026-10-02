@@ -3,6 +3,8 @@ namespace NIN;
 
 public class Config
 {
+    public static Config Instance { get; private set; }
+
     public Pars AppConfig{get;private set;}
 
     public Config()
@@ -18,5 +20,10 @@ public class Config
     public Config(Pars newConf)
     {
         AppConfig = newConf;
+    }
+
+    public static void Initialize(Config configInstance)
+    {
+        Instance = configInstance;
     }
 }

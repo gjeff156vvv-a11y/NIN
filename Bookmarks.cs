@@ -36,7 +36,7 @@ public class Bookmarks
                 // Если внутри файла прописан Title и он не пустой — берем его
                 if (pdfDoc.Info != null && !string.IsNullOrWhiteSpace(pdfDoc.Info.Title))
                 {
-                    return pdfDoc.Info.Title.Trim();
+                    //return pdfDoc.Info.Title.Trim();
                 }
             }
         }
@@ -49,7 +49,7 @@ public class Bookmarks
     private void AddUniqueBooks(List<Book> books, string[] bookPath)
     {
         foreach (var paths in bookPath)
-        {
+        {return rootCommand.Parse(args).Invoke();
             string cmdCommand = $"zathura {paths}";
 
             var Dublicate = from b in books

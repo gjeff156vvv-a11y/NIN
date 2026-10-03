@@ -11,7 +11,9 @@ public class Bookmarks
     {
         WriteIndented = true,
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+        PropertyNameCaseInsensitive = true,
+        AllowOutOfOrderMetadataProperties = true 
     };
 
     public void ProcessNewBook(string rootPath, string jsonPath)
@@ -19,8 +21,8 @@ public class Bookmarks
         if (!File.Exists(jsonPath)) return;
 
         string jsonText = File.ReadAllText(jsonPath);
-        BookDirectory oldRootDir = JsonSerializer.Deserialize<BookDirectory>(jsonText,jsonOptions)!;
-        BookDirectory newRootDir = DiskScanner.Scan(rootPath, NewDiskRegistry);
+        List<IElementMenu> oldRootDir = JsonSerializer.Deserialize<List<IElementMenu>>(jsonText,jsonOptions)!;
+        List<IElementMenu> newRootDir = DiskScanner.Scan(rootPath, NewDiskRegistry);
 
         OldJsonRegistry = RegisterOldBooks(oldRootDir);
 
@@ -30,45 +32,50 @@ public class Bookmarks
     }
 
     
-    private BookDirectory CompoundDir(BookDirectory oldDir, BookDirectory newDir)
+    private List<IElementMenu> CompoundDir(List<IElementMenu> oldDir, List<IElementMenu> newDir)
     {
-        BookDirectory resultDir = oldDir;
+        List<IElementMenu> resultDir = oldDir;
         
-        for(int i = resultDir.Items.Count-1; i>0; i--)
+        for(int i = resultDir.Count-1; i>0; i--)
         {
-            if(resultDir.Items[i].Type == ElementConstants.TypeBookmark)
+            if(resultDir[i].Type == ElementConstants.TypeBookmark)
             {
-                if(!NewDiskRegistry.Contains(((Book)resultDir.Items[i]).Cmd))
-                    resultDir.Items.RemoveAt(i);
+                if(!NewDiskRegistry.Contains(((Book)resultDir[i]).Cmd))
+                    resultDir.RemoveAt(i);
             }
             else
             {
-                for(int j = 0; j < newDir.Items.Count; j++)
+                for(int j = 0; j < newDir.Count; j++)
                 {
-                    if(resultDir.Items[i].Label == newDir.Items[j].Label)
-                        resultDir.Items[i] = CompoundDir((BookDirectory)resultDir.Items[i],(BookDirectory)newDir.Items[j]);
+                    if(resultDir[i].Label == newDir[j].Label)
+                        ((BookDirectory)resultDir[i]).Items = CompoundDir(((BookDirectory)resultDir[i]).Items,((BookDirectory)newDir[j]).Items);
                 }
             }
         }
-        foreach (var file in newDir.Items.OfType<Book>())
+        foreach (var file in newDir.OfType<Book>())
         {
             if(!OldJsonRegistry.Contains(file.Cmd))
-                resultDir.Items.Add(file);
+                resultDir.Add(file);
+        }
+        foreach (var dir in newDir.OfType<BookDirectory>())
+        {
+            if(!oldDir.OfType<BookDirectory>().Any(odir => odir.Label == dir.Label))
+                resultDir.Add(dir);
         }
         return resultDir;
     }
 
-    private HashSet<string> RegisterOldBooks(BookDirectory rootDir)
+    private HashSet<string> RegisterOldBooks(List<IElementMenu> rootDir)
     {
         HashSet<string> newRegistry = new();
-        var dir = rootDir.Items.OfType<BookDirectory>();
-        var book = rootDir.Items.OfType<Book>();
+        var dir = rootDir.OfType<BookDirectory>();
+        var book = rootDir.OfType<Book>();
 
         foreach (var file in book)
             newRegistry.Add(file.Cmd);
 
         foreach(var folder in dir)
-            newRegistry.UnionWith(RegisterOldBooks(folder));
+            newRegistry.UnionWith(RegisterOldBooks(folder.Items));
 
         return newRegistry;
     }

@@ -6,25 +6,20 @@ public static class DiskScanner
 {
     private static string GetName(string bookPath)
     {
+        string extension = Path.GetExtension(bookPath).ToLower();
+        if(extension != ".pdf")
+            return Path.GetFileNameWithoutExtension(bookPath) ?? Path.GetFileName(bookPath);
         try
         {
-            // Открываем PDF только для чтения метаданных
             using (PdfDocument pdfDoc = PdfReader.Open(bookPath, PdfDocumentOpenMode.InformationOnly))
-            {
-                // Если внутри файла прописан Title и он не пустой — берем его
-                if (pdfDoc.Info != null && !string.IsNullOrWhiteSpace(pdfDoc.Info.Title))
-                {
-                    //return pdfDoc.Info.Title.Trim();
-                }
-            }
+            if (pdfDoc.Info != null && !string.IsNullOrWhiteSpace(pdfDoc.Info.Title))
+                return pdfDoc.Info.Title.Trim();
         }
-        catch
-        {
-        }
+        catch{}
         return Path.GetFileNameWithoutExtension(bookPath) ?? Path.GetFileName(bookPath);
     }
 
-    private static void AddBooks(BookDirectory dir, string[] bookPath, HashSet<string> seenCmd)
+    private static void AddBooks(List<IElementMenu> dir, string[] bookPath, HashSet<string> seenCmd)
     {
         foreach (var file in bookPath)
         {
@@ -42,17 +37,13 @@ public static class DiskScanner
                 RunInBackground = true,
                 RunInTerminal = false
             };
-            dir.Items.Add(newBook);
+            dir.Add(newBook);
         }
     }
 
-    public static BookDirectory Scan(string currentPath,HashSet<string> seenCmd)
+    public static List<IElementMenu> Scan(string currentPath,HashSet<string> seenCmd)
     {
-        var currentDirectory = new BookDirectory
-        {
-            Label = Path.GetDirectoryName(currentPath)!
-        };
-
+        List<IElementMenu> currentDirectory = new();
         string[] filePath = System.IO.Directory.GetFiles(currentPath);
         AddBooks(currentDirectory,filePath,seenCmd);
 
@@ -60,11 +51,14 @@ public static class DiskScanner
 
         foreach (var dir in subDir)
         {
-            BookDirectory childDirectory = Scan(dir,seenCmd);
+            BookDirectory childDirectory = new(){
+                Label = Path.GetFileName(dir),
+                Items = Scan(dir,seenCmd)
+            };
 
             if (childDirectory.Items.Count > 0)
             {
-                currentDirectory.Items.Add(childDirectory);
+                currentDirectory.Add(childDirectory);
             }
         }
 

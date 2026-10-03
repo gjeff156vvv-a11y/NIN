@@ -6,7 +6,10 @@ public static class CliBuilder
     public static RootCommand Build()
     {
         var rootCommand = new RootCommand( "CLI утилита для занесение книг в библиотеку");
-        var pathArgument = new Argument<string?>("path");
+        var pathArgument = new Argument<string?>("path")
+        {
+            Arity = ArgumentArity.ZeroOrOne 
+        };
         rootCommand.Arguments.Add(pathArgument);
 
         rootCommand.Subcommands.Add(new SetCommand());

@@ -1,4 +1,5 @@
-﻿namespace NIN;
+﻿using System.Text.Json.Serialization;
+namespace NIN;
 
 public class Book: IElementMenu    
 {
@@ -7,6 +8,7 @@ public class Book: IElementMenu
     public string Description { get; set; } = string.Empty;
     public bool RunInBackground { get; set; }
     public bool RunInTerminal { get; set; }
+    [JsonIgnore]
     public string Type { get; set; } = ElementConstants.TypeBookmark;
     public string Glyph { get; set; } = ElementConstants.GlyphBookmark;
 }

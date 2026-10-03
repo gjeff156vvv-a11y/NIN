@@ -14,15 +14,19 @@ public class Bookmarks
         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
     };
 
-    public void ProcessNewBook(string[] booksPath, string jsonPath)
+    public void ProcessNewBook(string rootPath, string jsonPath)
     {
         if (!File.Exists(jsonPath)) return;
 
         string jsonText = File.ReadAllText(jsonPath);
-        List<Book> books = JsonSerializer.Deserialize<List<Book>>(jsonText,jsonOptions);
+        BookDirectory oldRootDir = JsonSerializer.Deserialize<BookDirectory>(jsonText,jsonOptions)!;
 
-        AddUniqueBooks(books,booksPath);
-        string newEntry = JsonSerializer.Serialize(books, jsonOptions);
+        List<string> seenCmd = new();
+
+        BookDirectory newRootDir = Scan(rootPath, seenCmd);
+
+        var resultDir = CompoundDir(oldRootDir!,newRootDir);
+        string newEntry = JsonSerializer.Serialize(resultDir, jsonOptions);
         File.WriteAllText(jsonPath,newEntry);
     }
 
@@ -46,30 +50,58 @@ public class Bookmarks
         return Path.GetFileNameWithoutExtension(bookPath) ?? Path.GetFileName(bookPath);
     }
 
-    private void AddUniqueBooks(List<Book> books, string[] bookPath)
+    private void AddBooks(BookDirectory dir, string[] bookPath, List<string> seenCmd)
     {
-        foreach (var paths in bookPath)
-        {return rootCommand.Parse(args).Invoke();
-            string cmdCommand = $"zathura {paths}";
+        foreach (var file in bookPath)
+        {
+            string cmdCommand = $"{Config.Instance!.AppConfig[Config.ProgKey]} {file}";
 
-            var Dublicate = from b in books
-                        where b.Cmd == cmdCommand
-                        select b;
-
-            if(!Dublicate.Any())
+            if(seenCmd.Contains(cmdCommand)) continue;
+            seenCmd.Add(cmdCommand);
+            
+            string label = GetName(file);
+            Book newBook = new()
             {
-                string label = GetName(paths);
-                Book newBook = new()
-                {
-                    Cmd = cmdCommand,
-                    Label = label,
-                    Glyph = "bookmark",
-                    Description = string.Empty,
-                    RunInBackground = true,
-                    RunInTerminal = false
-                };
-                books.Add(newBook);
+                Cmd = cmdCommand,
+                Label = label,
+                Description = string.Empty,
+                RunInBackground = true,
+                RunInTerminal = false
+            };
+            dir.Items.Add(newBook);
+        }
+    }
+
+    private BookDirectory Scan(string currentPath,List<string> seenCmd)
+    {
+        var currentDirectory = new BookDirectory
+        {
+            Label = Path.GetDirectoryName(currentPath)!
+        };
+
+        string[] filePath = System.IO.Directory.GetFiles(currentPath);
+        AddBooks(currentDirectory,filePath,seenCmd);
+
+        string[] subDir = System.IO.Directory.GetDirectories((currentPath));
+
+        foreach (var dir in subDir)
+        {
+            BookDirectory childDirectory = Scan(dir,seenCmd);
+
+            if (childDirectory.Items.Count > 0)
+            {
+                currentDirectory.Items.Add(childDirectory);
             }
         }
+
+        return currentDirectory;
+    }
+    
+    private BookDirectory CompoundDir(BookDirectory oldDir, BookDirectory newDir)
+    {
+        BookDirectory resultDir = new();
+
+
+        return resultDir;
     }
 }

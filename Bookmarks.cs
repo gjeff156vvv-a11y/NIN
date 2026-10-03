@@ -34,48 +34,57 @@ public class Bookmarks
     
     private List<IElementMenu> CompoundDir(List<IElementMenu> oldDir, List<IElementMenu> newDir)
     {
-        List<IElementMenu> resultDir = oldDir;
-        
-        for(int i = resultDir.Count-1; i>0; i--)
+        List<IElementMenu> resultDir = new List<IElementMenu>(oldDir); // Избегаем багов мутации
+
+        for (int i = resultDir.Count - 1; i >= 0; i--)
         {
-            if(resultDir[i].Type == ElementConstants.TypeBookmark)
+            if (resultDir[i].Type == ElementConstants.TypeBookmark)
             {
-                if(!NewDiskRegistry.Contains(((Book)resultDir[i]).Cmd))
+                if (!NewDiskRegistry.Contains(((Book)resultDir[i]).Cmd))
                     resultDir.RemoveAt(i);
             }
-            else
+            else if (resultDir[i] is BookDirectory oldFolder)
             {
-                for(int j = 0; j < newDir.Count; j++)
+                foreach (BookDirectory newFolder in newDir.OfType<BookDirectory>())
                 {
-                    if(resultDir[i].Label == newDir[j].Label)
-                        ((BookDirectory)resultDir[i]).Items = CompoundDir(((BookDirectory)resultDir[i]).Items,((BookDirectory)newDir[j]).Items);
+                    if (oldFolder.Label == newFolder.Label)
+                    {
+                        List<Book> updatedBooks = new List<Book>();
+                        foreach (Book b in oldFolder.Items)
+                            if (NewDiskRegistry.Contains(b.Cmd)) updatedBooks.Add(b);
+
+                        foreach (Book b in newFolder.Items)
+                            if (!OldJsonRegistry.Contains(b.Cmd)) updatedBooks.Add(b);
+
+                        oldFolder.Items = updatedBooks;
+                    }
                 }
             }
         }
+
         foreach (var file in newDir.OfType<Book>())
-        {
-            if(!OldJsonRegistry.Contains(file.Cmd))
-                resultDir.Add(file);
-        }
+            if (!OldJsonRegistry.Contains(file.Cmd)) resultDir.Add(file);
+
         foreach (var dir in newDir.OfType<BookDirectory>())
-        {
-            if(!oldDir.OfType<BookDirectory>().Any(odir => odir.Label == dir.Label))
-                resultDir.Add(dir);
-        }
+            if (!oldDir.OfType<BookDirectory>().Any(odir => odir.Label == dir.Label)) resultDir.Add(dir);
+
         return resultDir;
     }
 
     private HashSet<string> RegisterOldBooks(List<IElementMenu> rootDir)
     {
-        HashSet<string> newRegistry = new();
-        var dir = rootDir.OfType<BookDirectory>();
-        var book = rootDir.OfType<Book>();
+        HashSet<string> newRegistry = new HashSet<string>();
 
-        foreach (var file in book)
+        // Собираем книги из корня
+        foreach (var file in rootDir.OfType<Book>())
             newRegistry.Add(file.Cmd);
 
-        foreach(var folder in dir)
-            newRegistry.UnionWith(RegisterOldBooks(folder.Items));
+        // Собираем книги из папок (OfType больше не нужен, там только книги!)
+        foreach (var folder in rootDir.OfType<BookDirectory>())
+        {
+            foreach (var subBook in folder.Items)
+                newRegistry.Add(subBook.Cmd);
+        }
 
         return newRegistry;
     }

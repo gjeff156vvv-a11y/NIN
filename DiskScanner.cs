@@ -7,45 +7,52 @@ public static class DiskScanner
         return Path.GetFileNameWithoutExtension(bookPath) ?? Path.GetFileName(bookPath);
     }
 
-    private static void AddBooks(List<IElementMenu> dir, string[] bookPath, HashSet<string> seenCmd)
+    private static List<Book> AddBooks(string[] bookPath, HashSet<string> seenCmd)
     {
+        List<Book> books = new List<Book>();
         foreach (var file in bookPath)
         {
             string cmdCommand = $"{Config.Instance!.AppConfig[Config.ProgKey]} {file}";
 
-            if(seenCmd.Contains(cmdCommand)) continue;
+            if (seenCmd.Contains(cmdCommand)) continue;
             seenCmd.Add(cmdCommand);
-            
-            string label = GetName(file);
-            Book newBook = new()
+
+            Book newBook = new Book()
             {
                 Cmd = cmdCommand,
-                Label = label,
+                Label = GetName(file),
                 Description = string.Empty,
                 RunInBackground = true,
                 RunInTerminal = false
             };
-            dir.Add(newBook);
+            books.Add(newBook);
         }
+        return books;
     }
 
-    public static List<IElementMenu> Scan(string currentPath,HashSet<string> seenCmd)
+    public static List<IElementMenu> Scan(string currentPath, HashSet<string> seenCmd)
     {
-        List<IElementMenu> currentDirectory = new();
+        List<IElementMenu> currentDirectory = new List<IElementMenu>();
+
         string[] filePath = System.IO.Directory.GetFiles(currentPath);
-        AddBooks(currentDirectory,filePath,seenCmd);
+        foreach (Book rootBook in AddBooks(filePath, seenCmd))
+        {
+            currentDirectory.Add(rootBook);
+        }
 
-        string[] subDir = System.IO.Directory.GetDirectories((currentPath));
-
+        string[] subDir = System.IO.Directory.GetDirectories(currentPath);
         foreach (var dir in subDir)
         {
-            BookDirectory childDirectory = new(){
-                Label = Path.GetFileName(dir),
-                Items = Scan(dir,seenCmd)
-            };
+            string[] subFiles = System.IO.Directory.GetFiles(dir);
+            List<Book> folderBooks = AddBooks(subFiles, seenCmd);
 
-            if (childDirectory.Items.Count > 0)
+            if (folderBooks.Count > 0)
             {
+                BookDirectory childDirectory = new BookDirectory()
+                {
+                    Label = Path.GetFileName(dir),
+                    Items = folderBooks // Теперь типы идеально совпадают!
+                };
                 currentDirectory.Add(childDirectory);
             }
         }
@@ -53,3 +60,4 @@ public static class DiskScanner
         return currentDirectory;
     }
 }
+

@@ -22,9 +22,10 @@ public class NINRootComand: RootCommand
         string bookPath;
         if(path != null) bookPath = path!;
         else bookPath = Config.Instance!.AppConfig[Config.DirKey];
+        string jsonPath = Config.Instance!.AppConfig[Config.JsonKey];
 
-        bookmarks.ProcessNewBook(bookPath, Config.Instance!.AppConfig[Config.JsonKey]);
-        SyncReport report = bookmarks.GetSyncReport();
-        ReportPrinter.Print(report);
+        bookmarks.ProcessNewBook(bookPath,jsonPath);
+        var oldDir = Bookmarks.ReadBookmarks(jsonPath);
+        Status.GetSyncReport(oldDir);
     }
 }

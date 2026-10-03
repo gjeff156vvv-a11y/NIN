@@ -8,6 +8,8 @@ public static class CliBuilder
         var rootCommand = new NINRootComand();
 
         rootCommand.Subcommands.Add(new SetCommand());
+        rootCommand.Subcommands.Add(new CheckCommand());
+        rootCommand.Subcommands.Add(new LibraryCommand());
 
         return rootCommand;
     }

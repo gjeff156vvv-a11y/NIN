@@ -33,5 +33,10 @@ public static class CliBuilder
         else bookPath = Config.Instance!.AppConfig[Config.DirKey];
 
         bookmarks.ProcessNewBook(bookPath, Config.Instance!.AppConfig[Config.JsonKey]);
+        // 2. ЗАПРОС: Считаем, сколько чего получилось
+        SyncReport report = bookmarks.GetSyncReport();
+
+        // 3. ВЫВОД: Выводим красивый отчет на экран
+        ReportPrinter.Print(report);
     }
 }

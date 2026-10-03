@@ -7,6 +7,8 @@ public class Bookmarks
 {
     HashSet<string> NewDiskRegistry = new();
     HashSet<string> OldJsonRegistry = new();
+    List<IElementMenu> ResultDir = new List<IElementMenu>(); // Избегаем багов мутации
+
     private readonly JsonSerializerOptions jsonOptions = new()
     {
         WriteIndented = true,
@@ -26,8 +28,8 @@ public class Bookmarks
 
         OldJsonRegistry = RegisterOldBooks(oldRootDir);
 
-        var resultDir = CompoundDir(oldRootDir!,newRootDir);
-        string newEntry = JsonSerializer.Serialize(resultDir, jsonOptions);
+        ResultDir = CompoundDir(oldRootDir!,newRootDir);
+        string newEntry = JsonSerializer.Serialize(ResultDir, jsonOptions);
         File.WriteAllText(jsonPath,newEntry);
     }
 
@@ -75,11 +77,9 @@ public class Bookmarks
     {
         HashSet<string> newRegistry = new HashSet<string>();
 
-        // Собираем книги из корня
         foreach (var file in rootDir.OfType<Book>())
             newRegistry.Add(file.Cmd);
 
-        // Собираем книги из папок (OfType больше не нужен, там только книги!)
         foreach (var folder in rootDir.OfType<BookDirectory>())
         {
             foreach (var subBook in folder.Items)
@@ -87,5 +87,25 @@ public class Bookmarks
         }
 
         return newRegistry;
+    }
+    public SyncReport GetSyncReport()
+    {
+        int totalFolders = 0;
+        int totalBooks = 0;
+
+        foreach (var item in ResultDir)
+        {
+            if (item is BookDirectory folder)
+            {
+                totalFolders++;
+                totalBooks += folder.Items.Count; // Считаем книги в папках
+            }
+            else if (item is Book)
+            {
+                totalBooks++; // Считаем книги в корне
+            }
+        }
+
+        return new SyncReport { FoldersCount = totalFolders, BooksCount = totalBooks };
     }
 }

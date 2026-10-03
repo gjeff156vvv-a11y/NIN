@@ -1,7 +1,8 @@
 ﻿namespace NIN;
 
-public class Book: Element
+public class Book: IElementMenu    
 {
+    public string Label { get; set; } = string.Empty;
     public string Cmd { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public bool RunInBackground { get; set; }

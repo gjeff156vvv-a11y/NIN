@@ -10,7 +10,7 @@ public static class ManagerConfig
     public static void Load()
     {
         Config config;
-        string content = setting.ReadAll();
+        string? content = setting.ReadAll();
         if (content == null) config  = new Config();
         else config = new Config(Parser.Deserialize(content));
 
@@ -19,7 +19,7 @@ public static class ManagerConfig
 
     public static void Save()
     {
-        string text = Parser.Serialize(Config.Instance.AppConfig);
+        string text = Parser.Serialize(Config.Instance!.AppConfig);
         setting.SaveAll(text);
     }
 }

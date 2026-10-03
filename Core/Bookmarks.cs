@@ -7,9 +7,7 @@ public class Bookmarks
 {
     HashSet<string> NewDiskRegistry = new();
     HashSet<string> OldJsonRegistry = new();
-    List<IElementMenu> ResultDir = new List<IElementMenu>(); // Избегаем багов мутации
-
-    private readonly JsonSerializerOptions jsonOptions = new()
+    private static readonly JsonSerializerOptions jsonOptions = new()
     {
         WriteIndented = true,
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -22,17 +20,21 @@ public class Bookmarks
     {
         if (!File.Exists(jsonPath)) return;
 
-        string jsonText = File.ReadAllText(jsonPath);
-        List<IElementMenu> oldRootDir = JsonSerializer.Deserialize<List<IElementMenu>>(jsonText,jsonOptions)!;
+        List<IElementMenu> oldRootDir = ReadBookmarks(jsonPath);
         List<IElementMenu> newRootDir = DiskScanner.Scan(rootPath, NewDiskRegistry);
 
         OldJsonRegistry = RegisterOldBooks(oldRootDir);
 
-        ResultDir = CompoundDir(oldRootDir!,newRootDir);
+        var ResultDir = CompoundDir(oldRootDir!,newRootDir);
         string newEntry = JsonSerializer.Serialize(ResultDir, jsonOptions);
         File.WriteAllText(jsonPath,newEntry);
     }
 
+    public static List<IElementMenu> ReadBookmarks(string jsonPath)
+    {
+        string jsonText = File.ReadAllText(jsonPath);
+        return JsonSerializer.Deserialize<List<IElementMenu>>(jsonText,jsonOptions)!;
+    }
     
     private List<IElementMenu> CompoundDir(List<IElementMenu> oldDir, List<IElementMenu> newDir)
     {
@@ -87,25 +89,5 @@ public class Bookmarks
         }
 
         return newRegistry;
-    }
-    public SyncReport GetSyncReport()
-    {
-        int totalFolders = 0;
-        int totalBooks = 0;
-
-        foreach (var item in ResultDir)
-        {
-            if (item is BookDirectory folder)
-            {
-                totalFolders++;
-                totalBooks += folder.Items.Count; // Считаем книги в папках
-            }
-            else if (item is Book)
-            {
-                totalBooks++; // Считаем книги в корне
-            }
-        }
-
-        return new SyncReport { FoldersCount = totalFolders, BooksCount = totalBooks };
     }
 }

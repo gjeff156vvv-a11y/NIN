@@ -3,7 +3,10 @@ namespace NIN;
 
 public class NINRootComand: RootCommand
 {
-    private readonly Argument<string> _pathArgument = new Argument<string?>("path");
+    private readonly Argument<string?> _pathArgument = new Argument<string?>("path")
+    {
+        Arity = ArgumentArity.ZeroOrOne 
+    };
     public NINRootComand() : base("CLI утилита для занесение книг в библиотеку")
     {
         Arguments.Add(_pathArgument);

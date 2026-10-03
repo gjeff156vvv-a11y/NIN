@@ -1,21 +1,9 @@
-﻿using PdfSharpCore.Pdf;
-using PdfSharpCore.Pdf.IO;
-namespace NIN;
+﻿namespace NIN;
 
 public static class DiskScanner
 {
     private static string GetName(string bookPath)
     {
-        string extension = Path.GetExtension(bookPath).ToLower();
-        if(extension != ".pdf")
-            return Path.GetFileNameWithoutExtension(bookPath) ?? Path.GetFileName(bookPath);
-        try
-        {
-            using (PdfDocument pdfDoc = PdfReader.Open(bookPath, PdfDocumentOpenMode.InformationOnly))
-            if (pdfDoc.Info != null && !string.IsNullOrWhiteSpace(pdfDoc.Info.Title))
-                return pdfDoc.Info.Title.Trim();
-        }
-        catch{}
         return Path.GetFileNameWithoutExtension(bookPath) ?? Path.GetFileName(bookPath);
     }
 

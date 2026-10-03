@@ -10,7 +10,6 @@
 
   <ItemGroup>
     <PackageReference Include="ConfParser" Version="1.0.0" />
-    <PackageReference Include="PdfSharpCore" Version="1.3.67" />
     <PackageReference Include="Storage" Version="1.0.3" />
     <PackageReference Include="System.CommandLine" Version="2.0.11" />
   </ItemGroup>
